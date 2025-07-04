@@ -6,18 +6,88 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Wind } from "lucide-react";
+import { CalendarIcon, MapPin, Wind, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [cityName, setCityName] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = () => {
+  // Configure your Django backend URL here
+  const DJANGO_API_URL = process.env.REACT_APP_DJANGO_API_URL || "http://localhost:8000/api";
+
+  const handleSubmit = async () => {
+    if (!cityName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a city name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    console.log("Sending request to Django backend...");
     console.log("City:", cityName);
     console.log("Date:", selectedDate);
-    // Add your ML model integration here
+
+    try {
+      const requestData = {
+        city: cityName.trim(),
+        date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : null,
+      };
+
+      console.log("Request data:", requestData);
+
+      const response = await fetch(`${DJANGO_API_URL}/predict/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add any authentication headers if needed
+          // "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Django API error:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Django API response:", data);
+
+      toast({
+        title: "Success",
+        description: "AQI prediction received successfully!",
+      });
+
+      // Handle the successful response here
+      // You can update state or navigate to results page
+      
+    } catch (error) {
+      console.error("Error calling Django backend:", error);
+      
+      let errorMessage = "Failed to get AQI prediction";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -64,6 +134,7 @@ const Index = () => {
                     value={cityName}
                     onChange={(e) => setCityName(e.target.value)}
                     className="h-12 text-base"
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -80,6 +151,7 @@ const Index = () => {
                           "h-12 w-full justify-start text-left font-normal",
                           !selectedDate && "text-muted-foreground"
                         )}
+                        disabled={isLoading}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
@@ -100,9 +172,17 @@ const Index = () => {
 
               <Button 
                 onClick={handleSubmit}
-                className="w-full mt-6 h-12 text-base bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
+                disabled={isLoading}
+                className="w-full mt-6 h-12 text-base bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50"
               >
-                Get AQI Prediction
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Getting Prediction...
+                  </>
+                ) : (
+                  "Get AQI Prediction"
+                )}
               </Button>
             </CardContent>
           </Card>
