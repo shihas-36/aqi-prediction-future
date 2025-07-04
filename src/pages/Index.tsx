@@ -6,72 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, TrendingUp, Wind } from "lucide-react";
+import { CalendarIcon, MapPin, Wind } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import AQIChart from "@/components/AQIChart";
-import AQICard from "@/components/AQICard";
-import { toast } from "@/hooks/use-toast";
-
-// Mock data structure - replace with actual API calls to your ML model
-const mockPredictionData = {
-  city: "New York",
-  predictions: [
-    { date: "2025-07-05", aqi: 65, category: "Moderate" },
-    { date: "2025-07-06", aqi: 58, category: "Moderate" },
-    { date: "2025-07-07", aqi: 72, category: "Moderate" },
-    { date: "2025-07-08", aqi: 45, category: "Good" },
-    { date: "2025-07-09", aqi: 38, category: "Good" },
-    { date: "2025-07-10", aqi: 41, category: "Good" },
-    { date: "2025-07-11", aqi: 55, category: "Moderate" },
-  ]
-};
 
 const Index = () => {
   const [cityName, setCityName] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [predictionData, setPredictionData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePrediction = async () => {
-    if (!cityName.trim()) {
-      toast({
-        title: "City Required",
-        description: "Please enter a city name to get predictions.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Simulate API call - replace with actual ML model API call
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate loading
-      
-      // Here you would make the actual API call to your ML model
-      // const response = await fetch('/api/predict-aqi', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ city: cityName, date: selectedDate })
-      // });
-      // const data = await response.json();
-      
-      setPredictionData({ ...mockPredictionData, city: cityName });
-      
-      toast({
-        title: "Prediction Generated",
-        description: `7-day AQI forecast for ${cityName} is ready!`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate prediction. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSubmit = () => {
+    console.log("City:", cityName);
+    console.log("Date:", selectedDate);
+    // Add your ML model integration here
   };
 
   return (
@@ -153,72 +99,17 @@ const Index = () => {
               </div>
 
               <Button 
-                onClick={handlePrediction}
-                disabled={isLoading}
+                onClick={handleSubmit}
                 className="w-full mt-6 h-12 text-base bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
               >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    Generating Prediction...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Generate 7-Day Prediction
-                  </div>
-                )}
+                Get AQI Prediction
               </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* Results Section */}
-        {predictionData && (
-          <div className="max-w-6xl mx-auto space-y-8">
-            {/* Current AQI Overview */}
-            <div className="grid md:grid-cols-3 gap-6">
-              <AQICard 
-                title="Current AQI" 
-                value={predictionData.predictions[0].aqi}
-                category={predictionData.predictions[0].category}
-                city={predictionData.city}
-              />
-              <AQICard 
-                title="7-Day Average" 
-                value={Math.round(predictionData.predictions.reduce((sum, p) => sum + p.aqi, 0) / predictionData.predictions.length)}
-                category="Moderate"
-                city={predictionData.city}
-              />
-              <AQICard 
-                title="Trend" 
-                value={predictionData.predictions[6].aqi - predictionData.predictions[0].aqi > 0 ? "↗" : "↘"}
-                category={predictionData.predictions[6].aqi - predictionData.predictions[0].aqi > 0 ? "Increasing" : "Decreasing"}
-                city={predictionData.city}
-                isTrend={true}
-              />
-            </div>
-
-            {/* Chart */}
-            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
-                  7-Day AQI Forecast for {predictionData.city}
-                </CardTitle>
-                <CardDescription>
-                  Predicted air quality index values for the next week
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AQIChart data={predictionData.predictions} />
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
         {/* Info Section */}
-        <div className="max-w-4xl mx-auto mt-12">
+        <div className="max-w-4xl mx-auto">
           <Card className="shadow-lg border-0 bg-white/60 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg">About AQI Categories</CardTitle>
