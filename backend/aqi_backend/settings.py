@@ -23,7 +23,7 @@ ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
     '0.0.0.0',
-    'aqi-prediction-future-l6flgtm7w-shihas-36s-projects.vercel.app',  # Your actual Vercel URL
+    'https://aqi-prediction-future-shihas-36s-projects.vercel.app/',  # Your actual Vercel URL
     '.onrender.com',  # Allow all Render subdomains
     # Add your specific Render URL here when you get it
 ]
