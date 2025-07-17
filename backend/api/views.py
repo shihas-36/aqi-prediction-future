@@ -26,7 +26,24 @@ def load_data():
             return _data_cache
     
     # Load data
-    data_path = os.path.join(os.path.dirname(__file__), '..', 'data1.csv')
+    # Try multiple possible paths for the data file
+    possible_paths = [
+        os.path.join(os.path.dirname(__file__), '..', 'data1.csv'),
+        os.path.join(os.path.dirname(__file__), '..', 'data.csv'),
+        os.path.join(os.path.dirname(__file__), '..', '..', 'content', 'data.csv'),
+        'data1.csv',
+        'data.csv'
+    ]
+    
+    data_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            data_path = path
+            break
+    
+    if data_path is None:
+        raise FileNotFoundError("Data file not found in any of the expected locations")
+    
     data = pd.read_csv(data_path)
     
     # Clean column names

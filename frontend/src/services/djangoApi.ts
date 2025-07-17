@@ -1,5 +1,7 @@
 // Django API service
-const DJANGO_API_URL = "http://localhost:8000/api";
+const DJANGO_API_URL = process.env.NODE_ENV === 'production' 
+  ? "https://your-app-name.onrender.com/api"  // Replace with your actual Render URL
+  : "http://localhost:8000/api";
 
 export interface PredictionRequest {
   city: string;
@@ -25,6 +27,7 @@ export interface CitiesResponse {
 
 export class DjangoApiService {
   private static baseUrl = DJANGO_API_URL;
+  private static readonly WAKE_UP_TIMEOUT = 45000; // 45 seconds for wake-up
 
   static async predictAQI(data: PredictionRequest): Promise<PredictionResponse> {
     const response = await fetch(`${this.baseUrl}/predict/`, {
@@ -33,6 +36,8 @@ export class DjangoApiService {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
+      // Longer timeout for potential wake-up
+      signal: AbortSignal.timeout(this.WAKE_UP_TIMEOUT),
     });
 
     if (!response.ok) {
@@ -49,6 +54,7 @@ export class DjangoApiService {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(this.WAKE_UP_TIMEOUT),
     });
 
     if (!response.ok) {

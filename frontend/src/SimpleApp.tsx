@@ -228,7 +228,7 @@ const SimpleApp = () => {
               width: '100%'
             }}
           >
-            {loading ? 'Loading...' : 'Get AQI Prediction'}
+            {loading ? 'Loading... (Server may be waking up, please wait 30-45 seconds)' : 'Get AQI Prediction'}
           </button>
 
           {error && (
