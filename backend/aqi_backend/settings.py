@@ -23,9 +23,8 @@ ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
     '0.0.0.0',
-    'https://aqi-prediction-future-shihas-36s-projects.vercel.app/',  # Your actual Vercel URL
+    '.vercel.app',  # Allow all Vercel deployments
     '.onrender.com',  # Allow all Render subdomains
-    # Add your specific Render URL here when you get it
 ]
 
 # Application definition
@@ -131,9 +130,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
-    "https://aqi-prediction-future-l6flgtm7w-shihas-36s-projects.vercel.app",  # Your actual Vercel URL
-    # Add your Railway URL here when you get it
-    # "https://your-app-name.up.railway.app",
+]
+
+# Allow all Vercel deployments for this project
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://aqi-prediction-future.*\.vercel\.app$",  # Match any Vercel deployment URL
 ]
 
 CORS_ALLOW_CREDENTIALS = True
