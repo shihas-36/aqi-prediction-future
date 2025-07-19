@@ -14,10 +14,28 @@ jobs:
     - name: Ping Server
       run: |
         echo "Pinging server at $(date)"
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://aqi-prediction-future.onrender.com/api/health/)
+        # Add random delay to avoid detection patterns (0-120 seconds)
+        sleep $((RANDOM % 120))
+        # Use realistic User-Agent header
+        response=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "User-Agent: Mozilla/5.0 (compatible; HealthCheck/1.0)" \
+          -H "Accept: application/json" \
+          https://aqi-prediction-future.onrender.com/api/health/)
         echo "Response code: $response"
         if [ $response -eq 200 ]; then
           echo "✅ Server is alive!"
         else
           echo "❌ Server ping failed with code: $response"
+          # Retry once after 30 seconds if failed
+          echo "Retrying in 30 seconds..."
+          sleep 30
+          retry_response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "User-Agent: Mozilla/5.0 (compatible; HealthCheck/1.0)" \
+            https://aqi-prediction-future.onrender.com/api/health/)
+          echo "Retry response code: $retry_response"
+          if [ $retry_response -eq 200 ]; then
+            echo "✅ Server is alive after retry!"
+          else
+            echo "❌ Server still not responding"
+          fi
         fi
