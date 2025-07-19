@@ -12,6 +12,30 @@ const SimpleApp = () => {
   const [cities, setCities] = useState<string[]>([]);
   const [loadingCities, setLoadingCities] = useState(true);
 
+  // Keep-alive mechanism to prevent Render server from sleeping
+  useEffect(() => {
+    const keepServerAwake = async () => {
+      try {
+        await DjangoApiService.healthCheck();
+        console.log('Keep-alive ping sent to server');
+      } catch (error) {
+        console.log('Keep-alive ping failed (server may be sleeping):', error);
+      }
+    };
+
+    // Send keep-alive ping every 10 minutes (600,000 ms)
+    const keepAliveInterval = setInterval(keepServerAwake, 10 * 60 * 1000);
+
+    // Initial ping after 30 seconds to let the app load first
+    const initialPing = setTimeout(keepServerAwake, 30000);
+
+    // Cleanup intervals when component unmounts
+    return () => {
+      clearInterval(keepAliveInterval);
+      clearTimeout(initialPing);
+    };
+  }, []);
+
   // Load cities when component mounts
   useEffect(() => {
     const fetchCities = async () => {
